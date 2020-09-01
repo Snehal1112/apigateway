@@ -16,40 +16,80 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
+	"fmt"
 	"github.com/snehal1112/gateway/bootstrap"
+	"github.com/snehal1112/gateway/config"
+	"github.com/snehal1112/gateway/server"
+	"os"
 
 	"github.com/spf13/cobra"
 )
 
+const (
+	defaultListenAddr = "127.0.0.1:8870"
+	uriBasePath       = "/api/v1"
+	backendURL        = "mongodb://localhost:27777/erp?readPreference=primary&appname=MongoDB%20Compass&ssl=false"
+)
+
+var bootstrapConfig = &bootstrap.Config{}
+
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Api gateway service which act as a gateway of all micro service.",
 	Run: func(cmd *cobra.Command, args []string) {
-		runServer("sdddd")
+		if err := serve(cmd, args); err != nil {
+			fmt.Printf("Error: %v \n\n", err)
+			os.Exit(1)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// serveCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	cfg := bootstrapConfig
+	serveCmd.Flags().StringVar(&cfg.Listen, "listen", getEnv("GATEWAY_LISTEN", defaultListenAddr), fmt.Sprintf("TCP listen address (default \"%s\")", "8778"))
+	serveCmd.Flags().StringVar(&cfg.URIBasePath, "uri-base-path", getEnv("GATEWAY_BASE_URI_PATH", uriBasePath), "uri base path for an api gateway.")
+	serveCmd.Flags().StringVar(&cfg.BackendURL, "backend-url", getEnv("GATEWAY_BACKEND_URL", backendURL), "uri base path for an api gateway backend.")
+	serveCmd.Flags().Bool("log-timestamp", true, "Prefix each log line with timestamp")
+	serveCmd.Flags().String("log-level", "info", "Log level (one of panic, fatal, error, warn, info or debug)")
 }
 
-func runServer(config string) {
-	bootstrap.NewServer(bootstrap.ConfigFile("config.json"))
+func serve(cmd *cobra.Command, args []string) error {
+	ctx := context.Background()
+	logTimestamp, _ := cmd.Flags().GetBool("log-timestamp")
+	logLevel, _ := cmd.Flags().GetString("log-level")
+
+	logger, err := newLogger(!logTimestamp, logLevel)
+	if err != nil {
+		return fmt.Errorf("failed to create logger: %v", err)
+	}
+	logger.Infoln("serve start")
+
+	bs, err := bootstrap.Boot(ctx, bootstrapConfig, &config.Config{
+		Logger: logger,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	srv, err := server.NewServer(
+		server.WithLogger(logger),
+		server.WithConfig(&server.Config{
+			Config:   bs.Config(),
+			Services: bs.Manager().Services(),
+			BasePath: bootstrapConfig.URIBasePath,
+		}),
+		server.WithListener(bs.Config().ListenAddr),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create server: %v", err)
+	}
+
+	srv.Serve(ctx)
+
+	return nil
 }

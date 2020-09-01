@@ -1,30 +1,55 @@
-{
+[{
     "name" : "crm",
     "active" : true,
     "proxy" : {
         "preserve_host" : false,
-        "listen_path" : "/example/*",
+        "listen_path" : "/employee",
         "upstreams" : {
             "balancing": "roundrobin",
             "targets": [{
-                "target": "http://service1:8080/"
-              }]
+                "target": "http://0.0.0.0:8873"
+            }]
         },
-        "strip_path" : false,
+        "strip_path" : true,
         "append_path" : false,
         "methods" : ["GET"]
     },
     "health_check": {
-        "url": "http://service1:8080/status",
+        "url": "http://0.0.0.0:8873/status",
         "timeout": 3
     },
-    "plugins": [
-        {
-            "name": "oauth2",
-            "enabled" : true,
-            "config": {
-                "server_name": "local"
-            }
+    "plugins": [{
+        "name": "oauth2",
+        "enabled" : true,
+        "config": {
+            "server_name": "local"
         }
-    ]
-}
+    }]
+},{
+    "name" : "crm",
+    "active" : true,
+    "proxy" : {
+        "preserve_host" : false,
+        "listen_path" : "/server1",
+        "upstreams" : {
+            "balancing": "roundrobin",
+            "targets": [{
+                "target": "http://0.0.0.0:8874"
+            }]
+        },
+        "strip_path" : true,
+        "append_path" : false,
+        "methods" : ["GET"]
+    },
+    "health_check": {
+        "url": "http://0.0.0.0:8874/status",
+        "timeout": 3
+    },
+    "plugins": [{
+        "name": "oauth2",
+        "enabled" : true,
+        "config": {
+            "server_name": "local"
+        }
+    }]
+}]
