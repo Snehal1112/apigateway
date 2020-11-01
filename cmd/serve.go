@@ -27,9 +27,10 @@ import (
 )
 
 const (
-	defaultListenAddr = "127.0.0.1:8870"
+	defaultListenAddr = "127.0.0.1:8773"
 	uriBasePath       = "/api/v1"
-	backendURL        = "mongodb://localhost:27777/erp?readPreference=primary&appname=MongoDB%20Compass&ssl=false"
+	defaultDBURI = "mongodb://0.0.0.0:27017/?retryWrites=false"
+	defaultDatabase = "gateway"
 )
 
 var bootstrapConfig = &bootstrap.Config{}
@@ -50,9 +51,10 @@ func init() {
 	rootCmd.AddCommand(serveCmd)
 
 	cfg := bootstrapConfig
-	serveCmd.Flags().StringVar(&cfg.Listen, "listen", getEnv("GATEWAY_LISTEN", defaultListenAddr), fmt.Sprintf("TCP listen address (default \"%s\")", "8778"))
-	serveCmd.Flags().StringVar(&cfg.URIBasePath, "uri-base-path", getEnv("GATEWAY_BASE_URI_PATH", uriBasePath), "uri base path for an api gateway.")
-	serveCmd.Flags().StringVar(&cfg.BackendURL, "backend-url", getEnv("GATEWAY_BACKEND_URL", backendURL), "uri base path for an api gateway backend.")
+	serveCmd.Flags().StringVar(&cfg.Listen, "listen", getEnv("GATEWAY_LISTEN", defaultListenAddr), fmt.Sprintf("TCP listen address (default \"%s\").", "8773"))
+	serveCmd.Flags().StringVar(&cfg.URIBasePath, "api_base", getEnv("GATEWAY_BASE_API", uriBasePath), "uri base path for an api gateway.")
+	serveCmd.Flags().StringVar(&cfg.BackendURL, "backend_url", getEnv("GATEWAY_BACKEND_URL", defaultDBURI), "uri base path for an api gateway backend.")
+	serveCmd.Flags().StringVar(&cfg.DatabaseName, "database_name", getEnv("GATEWAY_DATABASE", defaultDatabase), "database which used be the api gateway")
 	serveCmd.Flags().Bool("log-timestamp", true, "Prefix each log line with timestamp")
 	serveCmd.Flags().String("log-level", "info", "Log level (one of panic, fatal, error, warn, info or debug)")
 }

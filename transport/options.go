@@ -12,6 +12,7 @@ func WithDBConnect(url string, ctx context.Context) OptionsTransport {
 		t.Connect = client.NewConnection(
 			client.WithCtx(ctx),
 			client.WithURL(url),
+			client.WithDatabase("gateway"),//TODO: make it configurable
 			client.WithLogLevel("error"),
 		)
 	}

@@ -11,12 +11,16 @@ type Service struct {
 	HealthCheck HealthCheck  `bson:"health_check" json:"health_check"`
 }
 
-// About this health check we can think about later
+// HealthCheck About this health check we can think about later
 type HealthCheck struct {
 	URL     string `bson:"url" json:"url"`
 	Timeout int    `bson:"timeout" json:"timeout"`
 }
 
-func NewService(name string, active bool, proxy *proxy.Proxy) *Service {
-	return &Service{Name: name, Active: active, Proxy: proxy}
+func NewService(name string, active bool) *Service {
+	return &Service{Name: name, Active: active}
+}
+
+func (s *Service) NewProxy(optionProxy ...proxy.OptionProxy) *proxy.Proxy {
+	return proxy.NewProxy(optionProxy...)
 }

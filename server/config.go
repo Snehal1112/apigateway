@@ -8,10 +8,10 @@ import (
 // Config defines a Server's configuration settings.
 type Config struct {
 	Config   *config.Config
-	Services []registry.Service
+	Services []*registry.Service
 	BasePath string
 }
 
-func (c *Config) getServices() []registry.Service {
+func (c *Config) getServices() []*registry.Service {
 	return c.Services
 }

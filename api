@@ -7,7 +7,7 @@
         "upstreams" : {
             "balancing": "roundrobin",
             "targets": [{
-                "target": "http://0.0.0.0:8873"
+                "target": "http://0.0.0.0:8773"
             }]
         },
         "strip_path" : true,

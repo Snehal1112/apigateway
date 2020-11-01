@@ -7,11 +7,9 @@ import (
 )
 
 type Config struct {
-	ListenAddr string
-
-	Logger        logrus.FieldLogger
-	HTTPTransport http.RoundTripper
-
+	ListenAddr       string
+	Logger           logrus.FieldLogger
+	HTTPTransport    http.RoundTripper
 	TrustedProxyIPs  []*net.IP
 	TrustedProxyNets []*net.IPNet
 }

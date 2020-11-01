@@ -1,7 +1,6 @@
 package proxy
 
 type OptionProxy func(a *Proxy)
-type OptionUpstreams func(u *Upstreams)
 
 func WithPreserveHost(preserveHost bool) OptionProxy {
 	return func(a *Proxy) {
@@ -38,6 +37,8 @@ func WithUpstreams(upstreams *Upstreams) OptionProxy {
 		a.Upstreams = *upstreams
 	}
 }
+
+type OptionUpstreams func(u *Upstreams)
 
 func WithBalancing(balancing string) OptionUpstreams {
 	return func(u *Upstreams) {

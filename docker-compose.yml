@@ -1,16 +1,24 @@
 version: '3'
 services:
-  mongodb:
+  gatewaydb:
+    container_name: "gatewayDB"
     image: mongo
     ports:
-      - "27777:27017"
+      - 27017:27017
     volumes:
-      - "mongodata:/data/db"
-    networks:
-      - network1
+      - ./mongodata/data:/data/db
 
-volumes:
-  mongodata:
-
-networks:
-  network1:
+  gateway:
+    container_name: "gatewayAPI"
+    build:
+      context: ./
+      dockerfile: ./app.Dockerfile
+    ports:
+      - 8774:8773
+    environment:
+      GATEWAY_LISTEN : "0.0.0.0:8774"
+      GATEWAY_BASE_API: "/api/v1"
+      GATEWAY_BACKEND_URL: "mongodb://gatewayDB:27017/?retryWrites=false"
+      GATEWAY_DATABASE: "gateway"
+    depends_on:
+      - gatewaydb

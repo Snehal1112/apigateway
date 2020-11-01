@@ -9,8 +9,8 @@ import (
 func setup() *Proxy {
 	return NewProxy()
 }
-func TestNewProxy(t *testing.T) {
 
+func TestNewProxy(t *testing.T) {
 	var targets []Target
 	targets = append(targets, *NewTarget("http://service1:8080/"), *NewTarget("http://service2:8080/"))
 

@@ -15,6 +15,7 @@ type Config struct {
 	URIBasePath string
 	Listen      string
 	BackendURL  string
+	DatabaseName string
 }
 
 type bootstrap struct {

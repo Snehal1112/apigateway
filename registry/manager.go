@@ -2,7 +2,6 @@ package registry
 
 import (
 	"context"
-	"github.com/snehal1112/gateway/proxy"
 	"github.com/snehal1112/gateway/transport"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -10,31 +9,33 @@ import (
 type ManagerInterface interface {
 	Load(ctx context.Context) error
 	RegisterService(service *Service) error
-	CreateNewService(name string, active bool, proxy *proxy.Proxy) *Service
-	Services() []Service
+	CreateNewService(name string, active bool) *Service
+	Services() []*Service
 }
 
 type Manager struct {
 	ctx      context.Context
-	services []Service
+	services []*Service
 	db       *transport.DBLayer
 }
 
-func (m *Manager) Services() []Service {
+func (m *Manager) Services() []*Service {
 	return m.services
 }
 
-func (m *Manager) CreateNewService(name string, active bool, proxy *proxy.Proxy) *Service {
-	return NewService(name, active, proxy)
+func (m *Manager) CreateNewService(name string, active bool) *Service {
+	return NewService(name, active)
 }
 
 func (m *Manager) RegisterService(service *Service) error {
+	m.services = append(m.services, service)
 	return nil
 }
 
 func (m *Manager) Load(ctx context.Context) error {
 	services, err := m.db.Connect.Search("services", bson.D{}, 0, 0)
 	if err != nil {
+		ctx.Deadline()
 		return err
 	}
 
@@ -43,11 +44,10 @@ func (m *Manager) Load(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		service := Service{}
-		bson.Unmarshal(data, &service)
+		service := &Service{}
+		bson.Unmarshal(data, service)
 		m.services = append(m.services, service)
 	}
-
 	return nil
 }
 

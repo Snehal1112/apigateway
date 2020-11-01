@@ -6,8 +6,7 @@ import (
 )
 
 type DBLayer struct {
-	ctx context.Context
-
+	ctx     context.Context
 	Connect *client.Connect
 }
 

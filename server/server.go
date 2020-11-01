@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/snehal1112/gateway/registry"
@@ -32,11 +33,18 @@ func NewServer(options ...Options) (*Server, error) {
 	return ser, nil
 }
 
-func (s *Server) AddContext(parent context.Context, next *httputil.ReverseProxy, service registry.Service) http.Handler {
+func (s *Server) AddContext(
+	parent context.Context,
+	next *httputil.ReverseProxy,
+	service *registry.Service) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		ctx, cancel := context.WithCancel(parent)
-		log.Println("service:-", service)
+		dd, _ := json.MarshalIndent(service, "", "    ")
+		logrus.Println("service:-", string(dd))
+		log.Println("params:-", req.URL.Query().Get("data"))
+
 		next.ServeHTTP(rw, req.WithContext(ctx))
+
 		cancel()
 	})
 }
@@ -57,6 +65,12 @@ func (s *Server) registerService(serverCtx context.Context, router *mux.Router) 
 				}).Infoln("Unable to pars the service url.")
 				continue
 			}
+
+			s.logger.WithFields(logrus.Fields{
+				"service_name":   service.Name,
+				"service_active": service.Active,
+				"target":         url,
+			}).Infoln("Service registered.")
 
 			log.Println(s.Config.BasePath + proxy.ListenPath)
 			if proxy.StripPath {
