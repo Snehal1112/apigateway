@@ -29,8 +29,8 @@ import (
 const (
 	defaultListenAddr = "127.0.0.1:8773"
 	uriBasePath       = "/api/v1"
-	defaultDBURI = "mongodb://0.0.0.0:27017/?retryWrites=false"
-	defaultDatabase = "gateway"
+	defaultDBURI      = "mongodb://0.0.0.0:27017/?retryWrites=false"
+	defaultDatabase   = "gateway"
 )
 
 var bootstrapConfig = &bootstrap.Config{}
@@ -92,6 +92,5 @@ func serve(cmd *cobra.Command, args []string) error {
 	}
 
 	srv.Serve(ctx)
-
 	return nil
 }

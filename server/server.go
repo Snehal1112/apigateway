@@ -33,16 +33,12 @@ func NewServer(options ...Options) (*Server, error) {
 	return ser, nil
 }
 
-func (s *Server) AddContext(
-	parent context.Context,
-	next *httputil.ReverseProxy,
-	service *registry.Service) http.Handler {
+func (s *Server) AddContext(parent context.Context, next *httputil.ReverseProxy, service *registry.Service) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		ctx, cancel := context.WithCancel(parent)
 		dd, _ := json.MarshalIndent(service, "", "    ")
 		logrus.Println("service:-", string(dd))
 		log.Println("params:-", req.URL.Query().Get("data"))
-
 		next.ServeHTTP(rw, req.WithContext(ctx))
 
 		cancel()
@@ -85,6 +81,17 @@ func (s *Server) registerService(serverCtx context.Context, router *mux.Router) 
 						),
 					),
 				)
+				//router.Handle(
+				//	s.Config.BasePath + proxy.ListenPath,
+				//	http.StripPrefix(
+				//		s.Config.BasePath,
+				//		s.AddContext(
+				//			serverCtx,
+				//			httputil.NewSingleHostReverseProxy(url),
+				//			service,
+				//		),
+				//	),
+				//)
 			}
 		}
 	}
